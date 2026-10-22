@@ -201,6 +201,7 @@ tfoot td{font-family:"Lalezar",system-ui,sans-serif; font-size:20px; border-bott
       <ul id="recent" class="glist"></ul>
     </div>
     <div class="actions"><button id="refresh" class="btn-ghost" type="button">حدّث من الشيت</button></div>
+    <button id="wipe" class="link" type="button">امسح اللعيبة والسجل من الجهاز ده</button>
   </div>
 </div>
 
@@ -449,6 +450,11 @@ tfoot td{font-family:"Lalezar",system-ui,sans-serif; font-size:20px; border-bott
     });
   }
   $('refresh').addEventListener('click', refreshStats);
+  $('wipe').addEventListener('click', () => {
+    if(!confirm('هتمسح اللعيبة والسجل واللعبة الحالية من الجهاز ده. لينك الشيت هيفضل زي ما هو. متأكد؟')) return;
+    try{ [K.state, K.roster, K.games, 'screw-score-v1'].forEach(k => localStorage.removeItem(k)); }catch(e){}
+    location.reload();
+  });
 
   /* ---------- views ---------- */
   function showPlay(){
