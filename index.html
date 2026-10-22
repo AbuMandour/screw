@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>حاسبة سكرو</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lalezar&family=Readex+Pro:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --felt:#1E4A42; --felt-deep:#14352F; --card:#FBF7EE; --card-2:#F1EADB;
+  --ink:#1D1B17; --muted:#6B6457; --red:#C2303A; --gold:#E2AE45; --line:#E2D8C4;
+  --on-felt:#F4EFE3; --on-felt-muted:#A9C2BB;
+  color-scheme: light; box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --felt:#102925; --felt-deep:#0A1C19; --card:#1F2A27; --card-2:#26332F;
+    --ink:#EDE7DA; --muted:#9FA89F; --red:#E5555E; --gold:#E8B85A; --line:#34433F;
+    --on-felt:#EDE7DA; --on-felt-muted:#8FA9A2; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"]{
+  --felt:#102925; --felt-deep:#0A1C19; --card:#1F2A27; --card-2:#26332F;
+  --ink:#EDE7DA; --muted:#9FA89F; --red:#E5555E; --gold:#E8B85A; --line:#34433F;
+  --on-felt:#EDE7DA; --on-felt-muted:#8FA9A2; color-scheme: dark;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+html,body{margin:0}
+body{
+  background:var(--felt);
+  background-image:radial-gradient(ellipse at 50% -10%, rgba(255,255,255,.07), transparent 60%);
+  color:var(--on-felt); font-family:"Readex Pro","Segoe UI",Tahoma,system-ui,sans-serif;
+  font-size:16px; line-height:1.55; min-height:100vh;
+}
+.wrap{max-width:560px; margin:0 auto; padding:20px 16px 48px}
+h1{font-family:"Lalezar","Readex Pro",system-ui,sans-serif; font-weight:400; font-size:clamp(44px,12vw,64px); line-height:1; margin:8px 0 4px}
+h1 small{display:block; font-family:"Readex Pro",system-ui,sans-serif; font-size:15px; color:var(--on-felt-muted); margin-top:8px}
+h2{font-family:"Lalezar",system-ui,sans-serif; font-weight:400; font-size:26px; margin:0 0 12px; line-height:1.2}
+.card{background:var(--card); color:var(--ink); border-radius:14px; padding:18px; margin-top:18px;
+  box-shadow:0 2px 0 var(--felt-deep), 0 10px 24px rgba(0,0,0,.25)}
+label{display:block; font-weight:500; margin-bottom:6px}
+.hint{color:var(--muted); font-size:14px; margin:4px 0 0}
+input{font:inherit; color:var(--ink); background:var(--card-2); border:2px solid transparent; border-radius:10px; padding:12px 14px; width:100%; min-height:48px}
+input:focus{outline:none; border-color:var(--gold)}
+button{font:inherit; cursor:pointer; border:0; border-radius:10px; min-height:48px; padding:0 16px; font-weight:700}
+button:focus-visible,input:focus-visible{outline:3px solid var(--gold); outline-offset:2px}
+.btn{background:var(--red); color:#fff; width:100%; font-size:18px}
+.btn:disabled{opacity:.45; cursor:not-allowed}
+.btn-ghost{background:var(--card-2); color:var(--ink)}
+.row{display:flex; gap:8px; align-items:center}
+.target-input{font-family:"Lalezar",system-ui,sans-serif; font-size:30px; text-align:center; max-width:140px}
+
+.tabs{display:flex; gap:6px; background:var(--felt-deep); border-radius:12px; padding:4px; margin-top:16px}
+.tabs button{flex:1; background:transparent; color:var(--on-felt-muted); min-height:44px}
+.tabs button[aria-selected="true"]{background:var(--card); color:var(--ink)}
+
+.chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px}
+.pick{min-height:40px; border-radius:999px; padding:0 16px; background:var(--card-2); color:var(--ink); font-weight:500}
+.pick[aria-pressed="true"]{background:var(--ink); color:var(--card)}
+.pick .ord{display:inline-block; min-width:22px; margin-inline-start:6px; padding:0 6px; border-radius:999px; background:var(--gold); color:#1D1B17; font-size:13px; font-weight:700}
+.empty{color:var(--muted); font-size:14px; margin:10px 0 0}
+
+.bar-target{display:flex; justify-content:space-between; align-items:baseline; color:var(--on-felt-muted); font-size:14px; margin-top:16px}
+.bar-target b{color:var(--on-felt); font-family:"Lalezar",system-ui,sans-serif; font-weight:400; font-size:22px}
+.players{list-style:none; margin:0; padding:0}
+.player{display:grid; grid-template-columns:1fr auto; gap:4px 12px; padding:12px 0; border-bottom:1px dashed var(--line)}
+.player:last-child{border-bottom:0}
+.pname{font-weight:700; font-size:18px; display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+.ptotal{font-family:"Lalezar",system-ui,sans-serif; font-size:36px; line-height:1; text-align:left; grid-row:span 2; align-self:center}
+.meter{height:6px; background:var(--card-2); border-radius:3px; overflow:hidden}
+.meter i{display:block; height:100%; background:var(--muted); border-radius:3px; transition:width .35s ease}
+.player.koz .ptotal{color:var(--red)}
+.player.koz .meter i{background:var(--red)}
+.player.best .meter i{background:var(--gold)}
+.tag{font-size:13px; font-weight:700; padding:2px 10px; border-radius:999px}
+.tag-koz{background:var(--red); color:#fff}
+.tag-best{background:var(--gold); color:#1D1B17}
+
+.entry{display:grid; grid-template-columns:1fr auto auto 104px; gap:8px; align-items:center; padding:8px 0}
+.entry span{font-weight:500; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.entry input{text-align:center; font-family:"Lalezar",system-ui,sans-serif; font-size:24px; padding:6px}
+.tog{min-height:44px; min-width:44px; padding:0 8px; background:var(--card-2); color:var(--muted); font-size:15px}
+.tog[aria-pressed="true"]{background:var(--ink); color:var(--card)}
+.entry .neg[aria-pressed="true"]{background:var(--red); color:#fff}
+
+.table-wrap{overflow-x:auto; margin:0 -4px}
+table{border-collapse:collapse; width:100%; font-size:15px; text-align:center}
+th,td{padding:8px 6px; border-bottom:1px solid var(--line); white-space:nowrap}
+th{font-weight:700; color:var(--muted); font-size:13px}
+td:first-child,th:first-child{color:var(--muted)}
+tfoot td{font-family:"Lalezar",system-ui,sans-serif; font-size:20px; border-bottom:0; color:var(--ink)}
+.stats td:first-child{color:var(--ink); font-weight:700; text-align:right}
+.stats td.n{font-family:"Lalezar",system-ui,sans-serif; font-size:20px}
+.stats tr.top td{background:color-mix(in srgb, var(--gold) 22%, transparent)}
+.actions{display:flex; gap:8px; margin-top:14px}
+.actions button{flex:1}
+.glist{list-style:none; margin:0; padding:0}
+.glist li{padding:10px 0; border-bottom:1px dashed var(--line); display:grid; grid-template-columns:auto 1fr; gap:2px 12px}
+.glist li:last-child{border-bottom:0}
+.glist .d{color:var(--muted); font-size:14px; grid-row:span 2}
+.glist .k{font-weight:700}
+.glist .z{color:var(--red); font-size:14px}
+
+.over{text-align:center; border:3px solid var(--gold)}
+.over .big{font-family:"Lalezar",system-ui,sans-serif; font-size:clamp(40px,13vw,60px); line-height:1.1; color:var(--red); margin:6px 0}
+.over p{margin:4px 0}
+.over .winner{color:var(--muted)}
+.over .winner b{color:var(--ink)}
+.jug{font-size:56px; line-height:1; display:inline-block; animation:wob 1.2s ease-in-out 2}
+@keyframes wob{0%,100%{transform:rotate(0)}25%{transform:rotate(-14deg)}75%{transform:rotate(14deg)}}
+@media (prefers-reduced-motion: reduce){ .jug{animation:none} .meter i{transition:none} }
+.hidden{display:none !important}
+.sync{font-size:13px; color:var(--on-felt-muted); text-align:center; margin:10px 0 0; min-height:20px}
+.link{background:none; color:var(--on-felt-muted); min-height:40px; text-decoration:underline; width:100%; font-weight:500}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>سكرو<small>أقل مجموع هو الكينج، وأعلى مجموع هو الكوز.</small></h1>
+
+  <div class="tabs" role="tablist">
+    <button id="tabPlay" role="tab" aria-selected="true" type="button">اللعبة</button>
+    <button id="tabStats" role="tab" aria-selected="false" type="button">السجل</button>
+  </div>
+
+  <div id="viewPlay">
+    <section id="setup">
+      <div class="card">
+        <h2>مين هيلعب؟</h2>
+        <div class="row">
+          <input id="nameInput" type="text" placeholder="لاعب جديد" autocomplete="off" enterkeyhint="done" maxlength="20">
+          <button id="addName" class="btn-ghost" type="button">إضافة</button>
+        </div>
+        <div id="roster" class="chips"></div>
+        <p id="rosterHint" class="empty"></p>
+      </div>
+      <div class="card">
+        <h2>اللعبة تفور على</h2>
+        <div class="row">
+          <input id="target" class="target-input" type="number" inputmode="numeric" min="1" value="100">
+          <p class="hint">أول ما حد يوصل للرقم ده أو يعدّيه، اللعبة تخلص.</p>
+        </div>
+      </div>
+      <div class="card">
+        <h2>الحفظ على Google Sheets</h2>
+        <label for="sheetUrl">لينك الـ Web App</label>
+        <input id="sheetUrl" type="url" dir="ltr" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off">
+        <p class="hint">لو سبته فاضي، السجل هيتحفظ على الموبايل ده بس.</p>
+      </div>
+      <div style="margin-top:18px"><button id="start" class="btn" type="button" disabled>ابدأ اللعب</button></div>
+    </section>
+
+    <section id="game" class="hidden">
+      <div class="bar-target"><span>الجولة <b id="roundNo">1</b></span><span>تفور على <b id="targetShow">100</b></span></div>
+      <p id="syncStatus" class="sync" aria-live="polite"></p>
+
+      <div id="overCard" class="card over hidden">
+        <div class="jug" aria-hidden="true">🏺</div>
+        <p>اللعبة فارت! الكوز هو</p>
+        <div id="kozName" class="big"></div>
+        <p class="winner">والكينج: <b id="winName"></b></p>
+        <div class="actions"><button id="rematch" class="btn" type="button">دور جديد بنفس اللعيبة</button></div>
+      </div>
+
+      <div class="card">
+        <h2>المجموع</h2>
+        <ul id="standings" class="players"></ul>
+      </div>
+
+      <div id="entryCard" class="card">
+        <h2>سكور الجولة</h2>
+        <div id="entries"></div>
+        <p class="hint">− للسكور السالب، ×2 لو اللاعب اتضاعف عليه.</p>
+        <div style="margin-top:14px"><button id="addRound" class="btn" type="button">سجّل الجولة</button></div>
+      </div>
+
+      <div id="historyCard" class="card hidden">
+        <h2>الجولات</h2>
+        <div class="table-wrap"><table id="history"></table></div>
+        <div class="actions"><button id="undo" class="btn-ghost" type="button">امسح آخر جولة</button></div>
+      </div>
+
+      <button id="newGame" class="link" type="button">لعبة جديدة / غيّر اللعيبة</button>
+    </section>
+  </div>
+
+  <div id="viewStats" class="hidden">
+    <p id="statsSource" class="sync" aria-live="polite"></p>
+    <div class="card">
+      <h2>الترتيب العام</h2>
+      <div id="statsEmpty" class="empty">لسه مفيش ألعاب خلصت. أول لعبة تفور هتظهر هنا.</div>
+      <div class="table-wrap"><table id="statsTable" class="stats"></table></div>
+      <p class="hint">مرتبين بعدد مرات الكينج، وبعدها بأقل متوسط.</p>
+    </div>
+    <div class="card">
+      <h2>آخر الألعاب</h2>
+      <ul id="recent" class="glist"></ul>
+    </div>
+    <div class="actions"><button id="refresh" class="btn-ghost" type="button">حدّث من الشيت</button></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const K = { state:'screw-score-v2', roster:'screw-roster', games:'screw-games', url:'screw-sheet-url' };
+  const ls = {
+    get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+    set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  };
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const newId = () => 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const fmtDate = d => { try{ return new Date(d).toLocaleDateString('ar-EG', { day:'numeric', month:'short', year:'numeric' }); }catch(e){ return ''; } };
+
+  let state = ls.get(K.state, { selected:[], target:100, started:false, id:'', date:'', players:[], rounds:[] });
+  if(!Array.isArray(state.selected)) state.selected = [];
+  let roster = ls.get(K.roster, []);
+  let games = ls.get(K.games, []);
+  let sheetUrl = '';
+  try{ sheetUrl = localStorage.getItem(K.url) || ''; }catch(e){}
+
+  // bring over players from the first version of the page
+  const old = ls.get('screw-score-v1', null);
+  if(old && Array.isArray(old.players)) old.players.forEach(p => { if(!roster.includes(p)) roster.push(p); });
+
+  const saveAll = () => { ls.set(K.state, state); ls.set(K.roster, roster); ls.set(K.games, games); };
+
+  /* ---------- game math ---------- */
+  function analyze(g){
+    const t = g.players.map((_, i) => g.rounds.reduce((a, r) => a + (Number(r[i]) || 0), 0));
+    const max = Math.max(...t), min = Math.min(...t), spread = max !== min;
+    const kings = g.players.filter((p, i) => t[i] === min);
+    const kozes = spread ? g.players.filter((p, i) => t[i] === max) : [];
+    const ranks = t.map(v => 1 + t.filter(o => o < v).length);
+    const roundWins = g.players.map(() => 0);
+    g.rounds.forEach(r => {
+      const rmin = Math.min(...r), rmax = Math.max(...r);
+      if(rmin !== rmax) r.forEach((v, i) => { if(v === rmin) roundWins[i]++; });
+    });
+    return { totals:t, kings, kozes, ranks, roundWins, min, max };
+  }
+  const totals = () => analyze(state).totals;
+  const isOver = t => state.rounds.length > 0 && t.some(v => v >= state.target);
+
+  /* ---------- sheet ---------- */
+  function post(payload){
+    if(!sheetUrl) return Promise.resolve(false);
+    return fetch(sheetUrl, { method:'POST', mode:'no-cors', headers:{ 'Content-Type':'text/plain;charset=utf-8' }, body:JSON.stringify(payload) })
+      .then(() => true).catch(() => false);
+  }
+  function syncGame(){
+    if(!state.started) return;
+    const a = analyze(state), over = isOver(a.totals);
+    games = games.filter(g => g.id !== state.id);
+    if(over) games.push({ id:state.id, date:state.date, target:state.target, players:state.players.slice(), rounds:state.rounds.map(r => r.slice()), finished:true });
+    saveAll();
+    if(!sheetUrl) return;
+    $('syncStatus').textContent = 'بيتحفظ على الشيت…';
+    post({ type:'game', id:state.id, date:state.date, target:state.target, players:state.players, rounds:state.rounds,
+      totals:a.totals, finished:over, kings:over ? a.kings : [], kozes:over ? a.kozes : [], ranks:a.ranks, roundWins:a.roundWins })
+      .then(ok => { $('syncStatus').textContent = ok ? 'اتحفظ على الشيت ✓' : 'ماتحفظش على الشيت. اتأكد من النت، والسكور محفوظ على الموبايل.'; });
+  }
+  function loadFromSheet(){
+    if(!sheetUrl) return Promise.resolve(false);
+    return fetch(sheetUrl).then(r => r.json()).then(d => {
+      if(Array.isArray(d.players)) d.players.forEach(p => { p = String(p).trim(); if(p && !roster.includes(p)) roster.push(p); });
+      if(Array.isArray(d.games)){
+        const byId = {};
+        games.forEach(g => byId[g.id] = g);
+        d.games.forEach(g => { if(g && g.id && Array.isArray(g.players) && Array.isArray(g.rounds)) byId[g.id] = g; });
+        games = Object.values(byId);
+      }
+      saveAll(); return true;
+    }).catch(() => false);
+  }
+
+  /* ---------- setup ---------- */
+  function renderSetup(){
+    $('roster').innerHTML = roster.map((p, i) => {
+      const at = state.selected.indexOf(p);
+      return `<button type="button" class="pick" data-pick="${i}" aria-pressed="${at >= 0}">${esc(p)}${at >= 0 ? `<span class="ord">${at + 1}</span>` : ''}</button>`;
+    }).join('');
+    const n = state.selected.length;
+    $('rosterHint').textContent = !roster.length ? 'ضيف أسماء اللعيبة. هيتسجلوا وتلاقيهم هنا كل مرة.'
+      : n < 2 ? 'اختار لاعبين على الأقل. الرقم جنب الاسم هو ترتيب اللعب.' : `هيلعبوا ${n} لاعبين.`;
+    $('start').disabled = n < 2;
+    $('target').value = state.target;
+    $('sheetUrl').value = sheetUrl;
+  }
+  function addName(){
+    const v = $('nameInput').value.trim().replace(/\s+/g, ' ');
+    if(!v) return;
+    if(!roster.includes(v)){ roster.push(v); post({ type:'player', name:v }); }
+    if(!state.selected.includes(v)) state.selected.push(v);
+    $('nameInput').value = ''; $('nameInput').focus();
+    saveAll(); renderSetup();
+  }
+  $('addName').addEventListener('click', addName);
+  $('nameInput').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); addName(); } });
+  $('roster').addEventListener('click', e => {
+    const b = e.target.closest('[data-pick]'); if(!b) return;
+    const name = roster[Number(b.dataset.pick)];
+    const at = state.selected.indexOf(name);
+    if(at >= 0) state.selected.splice(at, 1); else state.selected.push(name);
+    saveAll(); renderSetup();
+  });
+  $('target').addEventListener('input', () => { const n = parseInt($('target').value, 10); if(n > 0){ state.target = n; saveAll(); } });
+  $('sheetUrl').addEventListener('change', () => {
+    sheetUrl = $('sheetUrl').value.trim();
+    try{ localStorage.setItem(K.url, sheetUrl); }catch(e){}
+    if(sheetUrl) loadFromSheet().then(renderSetup);
+  });
+  $('start').addEventListener('click', () => {
+    const n = parseInt($('target').value, 10);
+    state.target = n > 0 ? n : 100;
+    state.players = state.selected.slice();
+    state.rounds = []; state.started = true; state.id = newId(); state.date = new Date().toISOString();
+    saveAll(); showPlay(); $('syncStatus').textContent = '';
+  });
+
+  /* ---------- game ---------- */
+  function renderEntries(){
+    $('entries').innerHTML = state.players.map((p, i) => `
+      <div class="entry">
+        <span>${esc(p)}</span>
+        <button type="button" class="tog neg" data-neg="${i}" aria-pressed="false" aria-label="سالب">−</button>
+        <button type="button" class="tog" data-dbl="${i}" aria-pressed="false" aria-label="ضعف">×2</button>
+        <input type="text" inputmode="numeric" pattern="[0-9]*" placeholder="0" data-in="${i}" aria-label="سكور ${esc(p)}">
+      </div>`).join('');
+  }
+  $('entries').addEventListener('click', e => {
+    const b = e.target.closest('.tog'); if(!b) return;
+    b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+  });
+  $('entries').addEventListener('keydown', e => {
+    if(e.key !== 'Enter' || !e.target.matches('input')) return;
+    e.preventDefault();
+    const ins = [...$('entries').querySelectorAll('input')];
+    const i = ins.indexOf(e.target);
+    if(i < ins.length - 1) ins[i + 1].focus(); else $('addRound').click();
+  });
+
+  function renderGame(){
+    const a = analyze(state), t = a.totals, over = isOver(t), hasRounds = state.rounds.length > 0;
+    const spread = a.max !== a.min;
+    $('roundNo').textContent = state.rounds.length + (over ? 0 : 1);
+    $('targetShow').textContent = state.target;
+
+    const order = state.players.map((p, i) => i).sort((x, y) => t[x] - t[y]);
+    $('standings').innerHTML = order.map(i => {
+      const koz = hasRounds && spread && t[i] === a.max;
+      const best = hasRounds && spread && t[i] === a.min;
+      const pct = Math.max(0, Math.min(100, (t[i] / state.target) * 100));
+      const left = state.target - t[i];
+      return `<li class="player ${koz ? 'koz' : ''} ${best ? 'best' : ''}">
+        <div class="pname">${esc(state.players[i])}
+          ${koz ? '<span class="tag tag-koz">الكوز 🏺</span>' : ''}
+          ${best ? '<span class="tag tag-best">الكينج 👑</span>' : ''}</div>
+        <div class="ptotal">${t[i]}</div>
+        <div><div class="meter"><i style="width:${pct}%"></i></div>
+          <p class="hint">${left > 0 ? 'فاضله ' + left + ' ويفور' : 'فار'}</p></div>
+      </li>`;
+    }).join('');
+
+    $('historyCard').classList.toggle('hidden', !hasRounds);
+    if(hasRounds){
+      $('history').innerHTML =
+        '<thead><tr><th>#</th>' + state.players.map(p => `<th>${esc(p)}</th>`).join('') + '</tr></thead>' +
+        '<tbody>' + state.rounds.map((r, k) => `<tr><td>${k + 1}</td>${r.map(v => `<td>${v}</td>`).join('')}</tr>`).join('') + '</tbody>' +
+        '<tfoot><tr><td>Σ</td>' + t.map(v => `<td>${v}</td>`).join('') + '</tr></tfoot>';
+    }
+
+    $('overCard').classList.toggle('hidden', !over);
+    $('entryCard').classList.toggle('hidden', over);
+    if(over){
+      $('kozName').textContent = a.kozes.join(' و ') || '—';
+      $('winName').textContent = a.kings.join(' و ') + ' (' + a.min + ')';
+    }
+  }
+
+  $('addRound').addEventListener('click', () => {
+    const ins = $('entries').querySelectorAll('input');
+    const round = []; let anyValue = false;
+    ins.forEach((inp, i) => {
+      const raw = inp.value.replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[^\d-]/g, '');
+      let v = parseInt(raw, 10);
+      if(isNaN(v)) v = 0; else anyValue = true;
+      if($('entries').querySelector(`[data-neg="${i}"]`).getAttribute('aria-pressed') === 'true') v = -Math.abs(v);
+      if($('entries').querySelector(`[data-dbl="${i}"]`).getAttribute('aria-pressed') === 'true') v *= 2;
+      round.push(v);
+    });
+    if(!anyValue){ ins[0].focus(); return; }
+    state.rounds.push(round);
+    renderEntries(); renderGame(); syncGame();
+    if(!isOver(totals())) $('entries').querySelector('input').focus({ preventScroll:true });
+    else window.scrollTo({ top:0, behavior:'smooth' });
+  });
+  $('undo').addEventListener('click', () => {
+    if(!state.rounds.length || !confirm('تمسح آخر جولة؟')) return;
+    state.rounds.pop(); renderGame(); syncGame();
+  });
+  $('rematch').addEventListener('click', () => {
+    state.rounds = []; state.id = newId(); state.date = new Date().toISOString();
+    saveAll(); renderEntries(); renderGame(); $('syncStatus').textContent = '';
+  });
+  $('newGame').addEventListener('click', () => {
+    if(state.rounds.length && !isOver(totals()) && !confirm('اللعبة لسه شغالة. تبدأ من جديد؟')) return;
+    state.rounds = []; state.started = false; saveAll(); showPlay();
+  });
+
+  /* ---------- stats ---------- */
+  function renderStats(){
+    const done = games.filter(g => g.finished && g.rounds.length).sort((x, y) => new Date(y.date) - new Date(x.date));
+    const s = {};
+    const row = p => s[p] || (s[p] = { name:p, games:0, kings:0, kozes:0, rounds:0, points:0 });
+    done.forEach(g => {
+      const a = analyze(g);
+      g.players.forEach((p, i) => {
+        const r = row(p);
+        r.games++; r.points += a.totals[i]; r.rounds += a.roundWins[i];
+        if(a.kings.includes(p)) r.kings++;
+        if(a.kozes.includes(p)) r.kozes++;
+      });
+    });
+    const list = Object.values(s).sort((x, y) => y.kings - x.kings || (x.points / x.games) - (y.points / y.games));
+    $('statsEmpty').classList.toggle('hidden', list.length > 0);
+    $('statsTable').innerHTML = list.length ?
+      '<thead><tr><th>اللاعب</th><th>لعب</th><th>كينج 👑</th><th>كوز 🏺</th><th>جولات كسبها</th><th>مجموع النقط</th><th>المتوسط</th></tr></thead><tbody>' +
+      list.map((r, k) => `<tr class="${k === 0 && r.kings ? 'top' : ''}"><td>${esc(r.name)}</td><td class="n">${r.games}</td><td class="n">${r.kings}</td><td class="n">${r.kozes}</td><td class="n">${r.rounds}</td><td class="n">${r.points}</td><td class="n">${Math.round(r.points / r.games)}</td></tr>`).join('') +
+      '</tbody>' : '';
+    $('recent').innerHTML = done.slice(0, 15).map(g => {
+      const a = analyze(g);
+      return `<li><span class="d">${fmtDate(g.date)}</span>
+        <span class="k">👑 ${esc(a.kings.join(' و '))}</span>
+        <span class="z">🏺 ${esc(a.kozes.join(' و ') || '—')} · ${g.rounds.length} جولات</span></li>`;
+    }).join('') || '<li class="empty">مفيش ألعاب لسه.</li>';
+  }
+  function refreshStats(){
+    renderStats();
+    if(!sheetUrl){ $('statsSource').textContent = 'السجل ده من الموبايل بس. حط لينك الشيت علشان يبقى مشترك.'; return; }
+    $('statsSource').textContent = 'بيحمّل من الشيت…';
+    loadFromSheet().then(ok => {
+      $('statsSource').textContent = ok ? 'محدّث من الشيت ✓' : 'مقدرتش أوصل للشيت، وده السجل اللي على الموبايل.';
+      renderStats();
+    });
+  }
+  $('refresh').addEventListener('click', refreshStats);
+
+  /* ---------- views ---------- */
+  function showPlay(){
+    $('setup').classList.toggle('hidden', state.started);
+    $('game').classList.toggle('hidden', !state.started);
+    if(state.started){ renderEntries(); renderGame(); } else renderSetup();
+  }
+  function tab(which){
+    const stats = which === 'stats';
+    $('tabPlay').setAttribute('aria-selected', !stats);
+    $('tabStats').setAttribute('aria-selected', stats);
+    $('viewPlay').classList.toggle('hidden', stats);
+    $('viewStats').classList.toggle('hidden', !stats);
+    if(stats) refreshStats(); else showPlay();
+  }
+  $('tabPlay').addEventListener('click', () => tab('play'));
+  $('tabStats').addEventListener('click', () => tab('stats'));
+
+  saveAll(); showPlay();
+  if(sheetUrl && !state.started) loadFromSheet().then(ok => { if(ok && !state.started) renderSetup(); });
+})();
+</script>
+</body>
+</html>
